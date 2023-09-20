@@ -19,8 +19,6 @@ class Crust(models.Model):
     def display_name(self):
         return SIZES[self.size -1][1]
 
-
-
     class Meta:
         unique_together = [['size','price']]
 
@@ -31,10 +29,11 @@ class Topping(models.Model):
     def __str__(self):
         return self.name
 
+
 class Order(models.Model):
-    phonenumber = models.CharField(max_length=20)
     crust = models.ForeignKey(Crust,on_delete=models.CASCADE)
-    topping = models.ForeignKey(Topping,on_delete=models.CASCADE)
+    topping = models.ForeignKey(Topping,on_delete=models.CASCADE,null=True)
+    draft = models.BooleanField(default=True)
 
 
 class OrderMessageConfig(models.Model):
