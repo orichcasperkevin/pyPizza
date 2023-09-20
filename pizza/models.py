@@ -31,6 +31,7 @@ class Topping(models.Model):
 
 
 class Order(models.Model):
+    phone_number = models.CharField(max_length=20)
     crust = models.ForeignKey(Crust,on_delete=models.CASCADE)
     topping = models.ForeignKey(Topping,on_delete=models.CASCADE,null=True)
     draft = models.BooleanField(default=True)

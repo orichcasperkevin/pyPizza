@@ -1,22 +1,9 @@
 from django.urls import reverse
-from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from django.http import HttpResponse
 
 from twilio.twiml.voice_response import VoiceResponse
 from pizza.models import OrderMessageConfig,Crust,Order,Topping
-
-class AnswerCall(APIView):
-    def post(self, request):
-        """Respond to incoming phone calls with a brief message."""
-        # Start our TwiML response
-        resp = VoiceResponse()
-
-        # Read a message aloud to the caller
-        resp.say("Thank you for calling! Have a great day.", voice='Polly.Amy')
-
-        return Response(str(resp),status =status.HTTP_200_OK,content_type='text/xml')
-
 
 class Welcome(APIView):
     def post(self,request):
@@ -33,7 +20,7 @@ class Welcome(APIView):
             num_digits=1, action=reverse('topping'), method="POST"
         ) as g:
             g.say(message=message, loop=3)
-        return Response(str(response),status =status.HTTP_200_OK,content_type='text/xml')
+        return HttpResponse(str(response),status=200,content_type='text/xml')
 
 
 class Toppings(APIView):
@@ -41,9 +28,13 @@ class Toppings(APIView):
         """
             Handle menu items
         """
-        crust_option = request.GET.get('Digits')
+        crust_option = request.POST.get('Digits')
+        phone_number = request.POST.get('Caller')
         #create the order
-        order = Order.objects.create(crust=Crust.objects.get(size=int(crust_option)))
+        order = Order.objects.create(
+            crust=Crust.objects.get(size=int(crust_option)),
+            phone_number = phone_number            
+        )
         #create message
         message = f"You have selected {order.crust.display_name} size."
         for i,topping in enumerate( Topping.objects.all() ):
@@ -57,15 +48,13 @@ class Toppings(APIView):
         ) as g:
             g.say(message=message, loop=3)
 
+        return HttpResponse(str(response),status=200,content_type='text/xml')
 
-        return Response(str(response),status =status.HTTP_200_OK,content_type='text/xml')
-
-        # return self._redirect_welcome()
 
 class FinalizeOrder(APIView):
 
     def post(self,request,order_id):
-        topping_option = request.GET.get('Digits')
+        topping_option = request.POST.get('Digits')
         topping = Topping.objects.all()[int(topping_option)-1]
         #the order
         order = Order.objects.get(id=order_id)
@@ -81,4 +70,4 @@ class FinalizeOrder(APIView):
         resp = VoiceResponse()
         # Read a message aloud to the caller
         resp.say(message, voice='Polly.Amy')
-        return Response(str(resp),status =status.HTTP_200_OK,content_type='text/xml')
+        return HttpResponse(str(resp),status=200,content_type='text/xml')
