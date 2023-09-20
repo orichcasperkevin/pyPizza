@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from twilio.twiml.voice_response import VoiceResponse
+from pizza.models import OrderMessageConfig,Crust
 
 class AnswerCall(APIView):
     def post(self, request):
@@ -22,15 +23,16 @@ class Welcome(APIView):
         """
             Respond to incoming calls, give the users options
         """
+        #construct the message
+        message = OrderMessageConfig.objects.first().welcome_message
+        #add the crust options
+        for i,crust in enumerate( Crust.objects.all() ):
+            message +=  f" press {crust.size} for {crust.display_name},"
         response = VoiceResponse()
         with response.gather(
             num_digits=1, action=reverse('menu'), method="POST"
         ) as g:
-            g.say(
-                message="Thanks for calling the E T Phone Home Service. " +
-                  "Please press 1 for directions." +
-                  "Press 2 for a list of planets to call.", loop=3)
-
+            g.say(message=message, loop=3)
         return Response(str(response),status =status.HTTP_200_OK,content_type='text/xml')
 
 
