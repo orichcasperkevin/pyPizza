@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8"?><Response><Gather action="/orders/finalize-order/1/" method="POST" numDigits="1"><Say loop="3">You have selected extra large size.press 1 for pepperoni,press 2 for hawaiian,press 3 for BBQ chicken,</Say></Gather></Response>
